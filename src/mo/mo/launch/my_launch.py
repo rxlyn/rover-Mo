@@ -6,7 +6,16 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 
 def generate_launch_description():
+  """
+  Naming Conventions
+  executable = file name + function
+  name = file name + node
+  ex. 
+  executable='commandLine'
+  name='commandLineNode'
+  """
 
+  
   """
   User Interface Nodes
 
@@ -18,8 +27,15 @@ def generate_launch_description():
   #Command Line Publisher Node
   consoleNode = Node(
       package='mo',                # name of your package
-      executable='commandLinePub', # name of the node’s executable
+      executable='commandLine',    # name of the node’s executable
       name='commandLineNode',      # optional remapped node name
+      output='screen',             # send stdout to screen
+  )
+
+  GUINode = Node(
+      package='mo',                # name of your package
+      executable='ros2GUI',        # name of the node’s executable
+      name='ros2GUINode',          # optional remapped node name
       output='screen',             # send stdout to screen
   )
 
@@ -35,15 +51,15 @@ def generate_launch_description():
   #SSH Connection Node
   paramikoNode = Node(
       package='mo',                # name of your package
-      executable='', # name of the node’s executable
-      name='commandLineNode',      # optional remapped node name
+      executable='sshConnect',     # name of the node’s executable
+      name='sshConnectNode',       # optional remapped node name
       output='screen',             # send stdout to screen
   )
   
   #Camera Feed Import Node
   GStreamNode = Node(
       package='mo',                # name of your package
-      executable='GStreamImport',  # name of the node’s executable
+      executable='GStream',        # name of the node’s executable
       name='GStreamNode',          # optional remapped node name
       output='screen',             # send stdout to screen
   )
@@ -76,6 +92,11 @@ def generate_launch_description():
   )
 
   return LaunchDescription([
+      consoleNode,
+      GUINode,
+      paramikoNode,
+      GStreamNode,
+      stereoProcessNode,
       autonomyNode,
       # you can add more Node() or other launch actions here
   ])
