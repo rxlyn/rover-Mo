@@ -7,11 +7,36 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-  #Command Line Publisher
+  """
+  User Interface Nodes
+
+  User points of connection
+  - Terminal
+  - GUI
+  """
+  
+  #Command Line Publisher Node
   consoleNode = Node(
       package='mo',                # name of your package
-      executable='commandLinePub',  # name of the node’s executable
-      name='commandLineNode',          # optional remapped node name
+      executable='commandLinePub', # name of the node’s executable
+      name='commandLineNode',      # optional remapped node name
+      output='screen',             # send stdout to screen
+  )
+
+  """
+  External Connection Nodes
+
+  Data read and write interface
+  - SSH (Paramiko) [SEND | Raspberry Pi]
+  - GStreamer [RECIEVE | Raspberry Pi]
+  - SensorStream [RECIEVE | Pixel XL]
+  """
+  
+  #SSH Connection Node
+  paramikoNode = Node(
+      package='mo',                # name of your package
+      executable='', # name of the node’s executable
+      name='commandLineNode',      # optional remapped node name
       output='screen',             # send stdout to screen
   )
   
@@ -23,7 +48,18 @@ def generate_launch_description():
       output='screen',             # send stdout to screen
   )
 
-  #Stereoscopic depth mapping Node
+  #Sensors Import Node
+  #TODO: Create node
+
+  """
+  Internal Process Nodes
+
+  ROS2 Internal Nodes
+  - Stereoscopic Mapping of 2 camera feeds
+  - Autonomous Driving controls (Collision Avoidence)
+  """
+  
+  #Stereoscopic Depth Mapping Node
   stereoProcessNode = Node(
       package='mo',                # name of your package
       executable='stereoProcess',  # name of the node’s executable
@@ -39,14 +75,7 @@ def generate_launch_description():
       output='screen',             # send stdout to screen
   )
 
-  
-
-  
-
-
-    
-
-    return LaunchDescription([
-        autonomyNode,
-        # you can add more Node() or other launch actions here
-    ])
+  return LaunchDescription([
+      autonomyNode,
+      # you can add more Node() or other launch actions here
+  ])
