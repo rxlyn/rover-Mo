@@ -22,6 +22,13 @@ setup(
         'console_scripts': [
                 'controller = mo.controllerPublisher:main',
                 'motor = mo.motorSubscriber:main',
+            
+                'commandLine = mo.commandLinePublisher:main',
+                'ros2GUI = mo.ros2GUI:main',
+                'sshConnect = mo.sshConnection:main',
+                'GStream = mo.GStreamerImport:main',
+                'stereoProcess = mo.stereoProcess:main',
+                'autonomy = mo.autonomy:main',
         ],
     },
 )
