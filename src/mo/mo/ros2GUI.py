@@ -13,7 +13,7 @@ class ROS2GUI(Node):
         #self.bridge = CvBridge()
         self.cmd_move = self.create_publisher(
             String,
-            '/gui/move',
+            '/motor_command_manual',
             10
         )
 
