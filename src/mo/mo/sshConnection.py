@@ -25,18 +25,6 @@ class SSHRemoteNode(Node):
         except Exception as e:
             self.get_logger().error(f"Failed to connect to {hostname}: {e}")
             return
-
-        # Example: Execute a command on the Raspberry Pi to list active ROS2 nodes.
-        # (For ROS1 use "rosnode list")
-        command = "ros2 node list"
-        stdin, stdout, stderr = self.ssh_client.exec_command(command)
-        output = stdout.read().decode().strip()
-        errors = stderr.read().decode().strip()
-
-        if output:
-            self.get_logger().info(f"ROS2 Nodes on remote Raspberry Pi:\n{output}")
-        if errors:
-            self.get_logger().error(f"Error output:\n{errors}")
             
         self.subscription = self.create_subscription(
             String,
@@ -49,17 +37,19 @@ class SSHRemoteNode(Node):
         self.ssh_client.close()
         
         
-    def action(self, commandName):
-        if (commandName == "drive"):
-            self.ssh.client.exec_command("")
-        elif (commandName == "reverse"):
-            self.ssh.client.exec_command("")
-        elif (commandName == "spinClock"):
-            self.ssh.client.exec_command("")
-        elif (commandName == "spinCounter"):
-            self.ssh.client.exec_command("")
-        elif (commandName == "stop"):
-            self.ssh.client.exec_command("")
+    def action(self, msg):
+        receivedString = msg.data
+        self.get_logger().info(f"Received message: {receivedString}")
+        if (receivedString == "forward"):
+            self.ssh_client.exec_command("echo FORWARD > ~/Desktop/motor_state.txt")
+        elif (receivedString == "backward"):
+            self.ssh_client.exec_command("echo BACKWARD > ~/Desktop/motor_state.txt")
+        elif (receivedString == "counter"):
+            self.ssh_client.exec_command("echo COUNTER > ~/Desktop/motor_state.txt")
+        elif (receivedString == "clock"):
+            self.ssh_client.exec_command("echo CLOCK > ~/Desktop/motor_state.txt")
+        elif (receivedString == "stop"):
+            self.ssh_client.exec_command("echo STOP > ~/Desktop/motor_state.txt")
     
         
 
