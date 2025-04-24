@@ -21,7 +21,7 @@ class autonomy(Node):
 
         self.cmd_pub = self.create_publisher(
             String,
-            'motor_command',
+            'motor_command_auto',
             10
         )
         
@@ -68,7 +68,7 @@ class autonomy(Node):
     
     def publish_drive(self):
         msg = String()
-        msg.data = "drive"
+        msg.data = "forward"
         self.cmd_pub.publish(msg)
         self.get_logger().info(f"Published: drive")
     
