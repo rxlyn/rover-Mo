@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ROS2 Robot Control with Cameras and Map</title>
+  <script src="https://cdn.jsdelivr.net/npm/roslib/build/roslib.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ros2d/build/ros2d.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/nav2d/build/nav2d.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding-top: 160px; /* Moved controls closer to top */
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    .camera-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 10px;
+      background: #222;
+      z-index: 5;
+    }
+
+    .camera-feed {
+      width: 320px;
+      height: 100px;
+      background-color: #444;
+      border: 2px solid #666;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .alpr-feed {
+      position: absolute;
+      top: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 660px;
+      height: 100px;
+      background-color: #333;
+      border: 2px solid #666;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      z-index: 5;
+    }
+
+    .controls {
+      text-align: center;
+      margin-top: -10px; /* Pulls the control panel closer to ALPR feed */
+    }
+
+    .controls h1 {
+      margin-bottom: 20px;
+    }
+
+    .controls button {
+      padding: 15px 30px;
+      font-size: 18px;
+      margin: 10px;
+      cursor: pointer;
+    }
+
+    #map {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 180px;
+      height: 180px;
+      border: 2px solid #333;
+      background-color: #fff;
+      z-index: 10;
+    }
+
+    #map-label {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      font-size: 12px;
+      background: rgba(255,255,255,0.8);
+      padding: 2px 5px;
+      z-index: 11;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top camera feeds -->
+  <div class="camera-bar">
+    <div class="camera-feed" id="cam1">Camera 1 Feed</div>
+    <div class="camera-feed" id="cam2">Camera 2 Feed</div>
+  </div>
+
+  <!-- ALPR camera feed -->
+  <div class="alpr-feed" id="cam3">ALPR Camera Feed</div>
+
+  <!-- Map -->
+  <div id="map-label">Live Map</div>
+  <div id="map"></div>
+
+  <!-- Control Panel -->
+  <div class="controls">
+    <h1>Control Panel</h1>
+    <div>
+      <button onclick="moveForward()">↑ Forward</button>
+    </div>
+    <div>
+      <button onclick="turnLeft()">← Turn Left</button>
+      <button onclick="stop()">■ Stop</button>
+      <button onclick="turnRight()">→ Turn Right</button>
+    </div>
+    <div>
+      <button onclick="moveBackward()">↓ Backward</button>
+    </div>
+  </div>
+
+
+  
+  <script>
+    // Connect to rosbridge
+    const ros = new ROSLIB.Ros({
+      url: 'ws://localhost:9090'
+    });
+
+    ros.on('connection', () => console.log('Connected to rosbridge server.'));
+    ros.on('error', (error) => console.error('Error connecting to rosbridge: ', error));
+    ros.on('close', () => console.log('Connection to rosbridge closed.'));
+
+    // Setup cmd_vel publisher
+    const cmdVel = new ROSLIB.Topic({
+      ros: ros,
+      name: '/cmd_vel',
+      messageType: 'geometry_msgs/msg/Twist'
+    });
+
+    function publishTwist(linearX, angularZ) {
+      const msg = new ROSLIB.Message({
+        linear: { x: linearX, y: 0.0, z: 0.0 },
+        angular: { x: 0.0, y: 0.0, z: angularZ }
+      });
+      cmdVel.publish(msg);
+    }
+
+    function moveForward() { publishTwist(0.5, 0.0); }
+    function moveBackward() { publishTwist(-0.5, 0.0); }
+    function turnLeft() { publishTwist(0.0, 0.5); }
+    function turnRight() { publishTwist(0.0, -0.5); }
+    function stop() { publishTwist(0.0, 0.0); }
+
+    // Map viewer
+    const viewer = new ROS2D.Viewer({
+      divID: 'map',
+      width: 180,
+      height: 180
+    });
+
+    const nav = NAV2D.OccupancyGridClientNav({
+      ros: ros,
+      rootObject: viewer.scene,
+      viewer: viewer,
+      serverName: '/navigate_to_pose',
+      withOrientation: true
+    });
+  </script>
+</body>
+</html>
