@@ -7,7 +7,13 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
 
-  
+  #Command Line Publisher
+  consoleNode = Node(
+      package='mo',                # name of your package
+      executable='commandLinePub',  # name of the node’s executable
+      name='commandLineNode',          # optional remapped node name
+      output='screen',             # send stdout to screen
+  )
   
   #Camera Feed Import Node
   GStreamNode = Node(
