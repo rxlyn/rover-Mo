@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Mo GUI</title>
+    <script src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding-top: 160px;
+            /* Moved controls closer to top */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .camera-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px;
+            background: #222;
+            z-index: 5;
+        }
+
+        .camera-feed {
+            width: 320px;
+            height: 100px;
+            background-color: #444;
+            border: 2px solid #666;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .alpr-feed {
+            position: absolute;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 660px;
+            height: 100px;
+            background-color: #333;
+            border: 2px solid #666;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            z-index: 5;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: -10px;
+            /* Pulls the control panel closer to ALPR feed */
+        }
+
+        .controls h1 {
+            margin-bottom: 20px;
+        }
+
+        .controls button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        #map {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 180px;
+            height: 180px;
+            border: 2px solid #333;
+            background-color: #fff;
+            z-index: 10;
+        }
+
+        #map-label {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            font-size: 12px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 5px;
+            z-index: 11;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top camera feeds -->
+    <div class="camera-bar">
+        <div class="camera-feed" id="cam1">Camera 1 Feed</div>
+        <div class="camera-feed" id="cam2">Camera 2 Feed</div>
+    </div>
+
+    <!-- ALPR camera feed -->
+    <div class="alpr-feed" id="cam3">ALPR Camera Feed</div>
+
+    <!-- Map -->
+    <div id="map-label">Live Map</div>
+    <div id="map"></div>
+
+    <!-- Control Panel -->
+    <div class="controls">
+        <h1>Control Panel</h1>
+        <div>
+            <button onclick="moveForward()">↑ Forward</button>
+        </div>
+        <div>
+            <button onclick="spinCounter()">← Turn Left</button>
+            <button onclick="stop()">■ Stop</button>
+            <button onclick="spinClock()">→ Turn Right</button>
+        </div>
+        <div>
+            <button onclick="moveBackward()">↓ Backward</button>
+        </div>
+    </div>
+
+
+
+
+
+    <script>
+        // Create a connection to the rosbridge WebSocket server.
+        var ros = new ROSLIB.Ros({
+            url: 'ws://localhost:9090'
+        });
+
+        ros.on('connection', function () {
+            console.log('Connected to rosbridge websocket server.');
+        });
+
+        ros.on('error', function (error) {
+            console.error('Error connecting to rosbridge: ', error);
+        });
+
+        ros.on('close', function () {
+            console.log('Connection to rosbridge closed.');
+        });
+
+        // Camera Topics
+        var cameraTopics = [
+            { topicName: '/camera1/image/compressed', elementId: 'cam1' },
+            { topicName: '/camera2/image/compressed', elementId: 'cam2' },
+            { topicName: '/camera3/image/compressed', elementId: 'cam3' }
+        ];
+
+        // Subscribe to Camera Feeds
+        cameraTopics.forEach(function (cam) {
+            var topic = new ROSLIB.Topic({
+                ros: ros,
+                name: cam.topicName,
+                messageType: 'sensor_msgs/CompressedImage'
+            });
+
+            topic.subscribe(function (message) {
+                // Update the image element with the received base64 JPEG data.
+                var imgElement = document.getElementById(cam.elementId);
+                imgElement.src = "data:image/jpeg;base64," + message.data;
+            });
+        });
+
+        // Control Publisher
+        var controlTopic = new ROSLIB.Topic({
+            ros: ros,
+            name: '/control_prompts',
+            messageType: 'std_msgs/String'
+        });
+
+        // Control Message
+        function setInput(motor1, motor2) {
+            var controlData = {
+                motors: [
+                    {
+                        motorLeft: motor1,
+                        motorRight: motor2
+                    }
+                ]
+            };
+            var msg = new ROSLIB.Message({
+                data: JSON.stringify(controlData)  // Encode as JSON string
+            });
+            controlTopic.publish(msg);
+        }
+
+        //Control Functions
+        function moveForward() { setInput(1, 1); }
+        function moveBackward() { setInput(-1, -1); }
+        function spinClock() { setInput(0.5, -0.5); }
+        function spingCounter() { setInput(-0.5, 0.5); }
+        function stop() { setInput(0, 0); }
+
+        // Map viewer
+        const viewer = new ROS2D.Viewer({
+            divID: 'map',
+            width: 180,
+            height: 180
+        });
+
+        const nav = NAV2D.OccupancyGridClientNav({
+            ros: ros,
+            rootObject: viewer.scene,
+            viewer: viewer,
+            serverName: '/navigate_to_pose',
+            withOrientation: true
+        });
+    </script>
+</body>
+
+</html>
