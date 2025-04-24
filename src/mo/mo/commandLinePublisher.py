@@ -7,7 +7,7 @@ from std_msgs.msg import String
 class CommandLinePublisher(Node):
     def __init__(self):
         super().__init__('command_line_publisher')
-        self.publisher_ = self.create_publisher(String, 'motor_command', 10)
+        self.publisher_ = self.create_publisher(String, 'motor_command_manual', 10)
         self.get_logger().info("Ready to publish messages. Type 'exit' to quit.")
 
     def publish_message(self, message_text):
