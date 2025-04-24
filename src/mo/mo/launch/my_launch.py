@@ -6,9 +6,11 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 
 def generate_launch_description():
+
+  
   
   #Camera Feed Import Node
-  autonomyNode = Node(
+  GStreamNode = Node(
       package='mo',                # name of your package
       executable='GStreamImport',  # name of the node’s executable
       name='GStreamNode',          # optional remapped node name
