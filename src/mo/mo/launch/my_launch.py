@@ -22,6 +22,7 @@ def generate_launch_description():
   User points of connection
   - Terminal
   - GUI
+  - Keyboard
   """
   
   #Command Line Publisher Node
@@ -36,6 +37,13 @@ def generate_launch_description():
       package='mo',                # name of your package
       executable='ros2GUI',        # name of the node’s executable
       name='ros2GUINode',          # optional remapped node name
+      output='screen',             # send stdout to screen
+  )
+
+  KeyboardNode = Node(
+      package='mo',                # name of your package
+      executable='keyboard',        # name of the node’s executable
+      name='keyboardNode',          # optional remapped node name
       output='screen',             # send stdout to screen
   )
 
