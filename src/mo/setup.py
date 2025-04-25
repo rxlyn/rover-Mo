@@ -25,6 +25,7 @@ setup(
             
                 'commandLine = mo.commandLinePublisher:main',
                 'ros2GUI = mo.ros2GUI:main',
+                'keyboard = mo.keyboardControl:main', #Might be wrong name
                 'sshConnect = mo.sshConnection:main',
                 'GStream = mo.GStreamerImport:main',
                 'stereoProcess = mo.stereoProcess:main',
